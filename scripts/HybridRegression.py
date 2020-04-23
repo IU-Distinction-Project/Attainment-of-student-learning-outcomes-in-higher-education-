@@ -39,7 +39,7 @@ class HybridRegression():
     def trainAndPredictCollaborativeFilteringModel(self, GM, SCIDs): 
         
         # we train the the collaborative filtering model (matrix factorization)
-        print ("Training [Collaborative Filtering Model]")
+        print (" - training [Collaborative Filtering Model]")
         S = self.mf.fit_transform(GM)
         C = self.mf.components_
         self.mf = np.dot(S, C)
@@ -55,19 +55,26 @@ class HybridRegression():
     
     ############################################################
     def trainLassoModel(self, Xtrain, Ytrain):         
-       print ("Training [Lasso Model]")
+       print (" - training [Lasso Model]")
        self.lassoReg.fit(Xtrain, Ytrain.ravel())
        scores = self.lassoReg.score(Xtrain,Ytrain)
        score_mean = scores.mean()        
-       print ("LassoReg ... \n\t Score_mean ={} \n\t Intercept ={} \n\t Coefficient = {}".format(score_mean, self.lassoReg.intercept_, self.lassoReg.coef_))        
+       print (" - lassoReg ... \n\t Score_mean ={} \n\t Intercept ={} \n\t Coefficient = {}...".format(score_mean, self.lassoReg.intercept_, self.lassoReg.coef_[0]))        
        return
 
 	
 	
 	############################################################
-    def getPredictions(self, Xpred, printToCSV=False):
+    def getPredictions(self, Xpred, Yactual, printToCSV=False):
         
+        print (" - getting the hybrid predictions ... ")
+        
+        # getting specific data from the dataset 
         theta1, theta2 = self.getTheta1And2(Xpred[:,0:1], Xpred[:,1:2])
+        studentLevelRatio = Xpred[:,2:3]
+        
+        
+        
         fRules = FuzzyRules()
         
         # get predictions lists
@@ -75,16 +82,30 @@ class HybridRegression():
         YpredFuzzyRules = fRules.getFuzzyRulesPredictions(Xpred)
         self.YpredMatrixFactorization = self.roundIt(self.YpredMatrixFactorization)
                 
-        
-        HybridYpred = np.multiply(self.YpredMatrixFactorization, theta1.T) + np.multiply(YpredFuzzyRules, theta2.T) + np.multiply(self.YpredLasso, self.dConfig['theta3'])
-        HybridYpred = self.roundIt(HybridYpred.T)
-          
+
+        # combining the three predictions
+        HybridYpred = np.multiply(self.YpredMatrixFactorization, theta1.T)         
+        HybridYpred = HybridYpred + np.multiply(YpredFuzzyRules, theta2.T) 
+        HybridYpred = HybridYpred + np.multiply(self.YpredLasso, self.dConfig['theta3'])
+                        
+        HybridYpred = self.roundIt(HybridYpred.T)        
         
         if printToCSV:
+            # print also the level
+            print (" - saving the hybrid predictions to a CSV file ... ")
             with open(self.dConfig['strPathOfRegPred'],'w') as preCSV:
-                preCSV.write("HybridYpred,YpredMatrixFactorization,YpredFuzzyRules,YpredLasso,theta1, theta2, theta3 \n")
+                preCSV.write("ActualOutput,HybridYpred,YpredMatrixFactorization,YpredFuzzyRules,YpredLasso,theta1, theta2, theta3 \n")
                 for i in range(len(self.YpredLasso)):
-                    preCSV.write("{},{},{},{},{},{},{}\n".format(HybridYpred[i,0], self.YpredMatrixFactorization[i], YpredFuzzyRules[i], self.YpredLasso[i], theta1[i,0], theta2[i,0], self.dConfig['theta3']))
+                    preCSV.write("{},{},{},{},{},{},{},{},{}\n".format(
+                            studentLevelRatio, 
+                            Yactual[i,0], 
+                            HybridYpred[i,0], 
+                            self.YpredMatrixFactorization[i], 
+                            YpredFuzzyRules[i], 
+                            self.YpredLasso[i], 
+                            theta1[i,0], 
+                            theta2[i,0], 
+                            self.dConfig['theta3']))
                                     
 		# return the mixed prediction           
         return HybridYpred

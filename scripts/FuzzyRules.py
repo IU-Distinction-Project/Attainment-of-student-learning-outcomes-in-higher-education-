@@ -31,8 +31,7 @@ class FuzzyRules():
             indexTypeofGradeAndRangeOfCourses = self.getTypesofGradeFromCube(s_GPA, GPAChangeRate, range_courses)
             
             YpredFuzzyRules[i] = Xpred[i, indexTypeofGradeAndRangeOfCourses]
-            print (YpredFuzzyRules[i])
-                            
+            
         return YpredFuzzyRules
     
     
