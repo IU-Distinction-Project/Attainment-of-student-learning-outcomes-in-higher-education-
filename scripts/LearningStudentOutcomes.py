@@ -9,7 +9,7 @@ Created on 16-4-2020
 from HybridRegression import HybridRegression
 from SelfOrganizingMaps import SelfOrganizingMap
 import pandas as pd
-
+import numpy as np
 
 
 class LearningStudentOutcomes():
@@ -53,13 +53,44 @@ class LearningStudentOutcomes():
             # We fetch the whole dataset from the local csv file only once
             if self.dataSet is None:                
                 self.dataSet = pd.read_csv(self.pathMainDataSet, header=None)
+            
+            '''
+            The main dataset in the file "MainDataset.csv" must contain in the following columns (in CSV format):
                 
+            0 StudentID	
+            1 CourseID
+            ============================================
+            2    X[0]  CourseTeachingRate	
+            3    X[1]  S_completedCourses	
+            4    X[2]  S_levelRatio	
+            5    X[3]  courseLevelRatio
+            6    X[4]  GPA
+            7    X[5]  GPAChangeRate
+            8    X[6]  TG_L_Last
+            9    X[7]  AG_L_Last
+            10   X[8]  LG_L_Last
+            11   X[9]  TG_L_All
+            12   X[10] AG_L_All
+            13   X[11] LG_L_All
+            14   X[12] TG_Last
+            15   X[13] AG_Last
+            16   X[14] LG_Last
+            17   X[15] TG_All
+            18   X[16] AG_All
+            19   X[17] LG_All
+            ..   X[..] other student features
+            ..   X[..] other Course features
+            ..   X[..] Grade
+            ============================================
+            ..   Y[..] Factors 
+            ============================================
+            '''
                 
             if is_it_for_hybrid_regression:
-                
-                # This is for Hybrid regression model
+
+                # This is for Hybrid regression model   
                 if is_it_for_training:
-                    X = pd.DataFrame(self.dataSet, columns= [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]).values[0:self.iDSTestingPosition]
+                    X = pd.DataFrame(self.dataSet, columns= range(2,18)).values[0:self.iDSTestingPosition]
                     Y = pd.DataFrame(self.dataSet, columns= [18]).values[0:self.iDSTestingPosition]
                     return X, Y
                 else:
@@ -79,6 +110,8 @@ class LearningStudentOutcomes():
                     return X, Y 
 
 
+    def getColumnIndexes(self, iFrom, iTo):        
+        return int(",".join(str(iCol) for iCol in np.concatenate([range(iFrom, iTo)])))
 
 
     # The big GM matrix that needs to be factorised
@@ -138,7 +171,7 @@ class LearningStudentOutcomes():
         # Loading the training dataset that includes [G], and train the self organizing map model
         X,Y = self.loadDataset(False, True)
         SOM = SelfOrganizingMap(self.dict_config)
-        SOM.train(X, Y)
+        SOM.train(X, Y, True)
         
         
         # Loading the testing dataset, and collecting the predictions as prototype vectors 
@@ -163,11 +196,15 @@ class LearningStudentOutcomes():
         print (" - an exported csv file saved ..")
         
 
-
+    # Print the current data-frame
+    ###################################################################
+    def printDataFrame(self):
+        if self.dataSet is None: self.loadDataset()
+        print (self.dataSet)
 
 
 def main():
-    
+
     lso = LearningStudentOutcomes()
     lso.performHybridRegression()
     lso.performMultiLabelClassification()

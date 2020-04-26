@@ -72,6 +72,7 @@ class HybridRegression():
         # getting specific data from the dataset 
         theta1, theta2 = self.getTheta1And2(Xpred[:,0:1], Xpred[:,1:2])
         studentLevelRatio = Xpred[:,2:3]
+        courseLevelRatio = Xpred[:,3:4]
         
         
         
@@ -94,11 +95,12 @@ class HybridRegression():
             # print also the level
             print (" - saving the hybrid predictions to a CSV file ... ")
             with open(self.dConfig['strPathOfRegPred'],'w') as preCSV:
-                preCSV.write("ActualOutput,HybridYpred,YpredMatrixFactorization,YpredFuzzyRules,YpredLasso,theta1, theta2, theta3 \n")
+                preCSV.write("ActualOutput,studentLevelRatio,courseLevelRatio,HybridYpred,YpredMatrixFactorization,YpredFuzzyRules,YpredLasso,theta1,theta2,theta3\n")
                 for i in range(len(self.YpredLasso)):
-                    preCSV.write("{},{},{},{},{},{},{},{},{}\n".format(
-                            studentLevelRatio, 
-                            Yactual[i,0], 
+                    preCSV.write("{},{},{},{},{},{},{},{},{},{}\n".format(
+                            studentLevelRatio[i,0],
+                            courseLevelRatio[i,0],
+                            Yactual[i,0],
                             HybridYpred[i,0], 
                             self.YpredMatrixFactorization[i], 
                             YpredFuzzyRules[i], 
@@ -107,12 +109,22 @@ class HybridRegression():
                             theta2[i,0], 
                             self.dConfig['theta3']))
                                     
-		# return the mixed prediction           
+		
+        
+        # print RMSE with Theta3 for only hybrid predictions
+        print (" - RMSE for the Hybrid Model= {} and theta3= {}".format(
+                self.RMSE(HybridYpred, Yactual), self.dConfig['theta3']))
+        
+        
+        # return the mixed prediction           
         return HybridYpred
 
 
     
-    
+    def RMSE(self, pred, actual):
+        return np.sqrt(((pred - actual) ** 2).mean())
+
+
     ############################################################
     def getTheta1And2(self, CourseTeachingRate,	S_completedCourses):        
         theta1 = (CourseTeachingRate * (1- self.dConfig['theta3']))/(CourseTeachingRate+S_completedCourses)
