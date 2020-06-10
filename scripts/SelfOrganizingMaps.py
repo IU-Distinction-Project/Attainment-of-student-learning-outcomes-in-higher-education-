@@ -174,34 +174,35 @@ class SelfOrganizingMap():
     
     ############################################################
     def getPredictions(self, Xactual, Yactual, printAccuracy=False):
-        
+                
         MappedNeurons = []
         for iIndex in range(len(Xactual)):
             iPV = self.getIndexOfWinnerNeuron(Xactual[iIndex])  
             MappedNeurons.append(iPV)
             
         Yactual = np.array(Yactual)
-
+        
+        
         if printAccuracy:
             
             # SOM_MLL_17         
-            FactorsPred =[]        
+            FactorsPred =[]
             for iPV in range(len(MappedNeurons)):
-                FactorsPred.append(self.prototypeVectorsSOM_MLL_17[iPV])
+                FactorsPred.append(self.prototypeVectorsSOM_MLL_17[MappedNeurons[iPV]])
             self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[SOM_MLL_17]: {}")
             
             
             # ML_SOM_19
             FactorsPred =[]        
             for iPV in range(len(MappedNeurons)):
-                FactorsPred.append(self.prototypeVectorsML_SOM_19[iPV])
+                FactorsPred.append(self.prototypeVectorsML_SOM_19[MappedNeurons[iPV]])
             self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[ML_SOM_19]: {}")
         
         
          # Our SOM approach
-        FactorsPred =[]        
+        FactorsPred =[]
         for iPV in range(len(MappedNeurons)):
-            FactorsPred.append(self.prototypeVectors[iPV])
+            FactorsPred.append(self.prototypeVectors[MappedNeurons[iPV]])
         FactorsPred = np.array(FactorsPred)
         
         
@@ -215,7 +216,9 @@ class SelfOrganizingMap():
 
 
     ############################################################
-    def doPrintAccuracy(self, Yactual, FactorsPred, msg):        
+    def doPrintAccuracy(self, Yactual, FactorsPred, msg):     
+        if len(Yactual) != len(FactorsPred):
+            raise ValueError("Yactual and FactorsPred are not the same!") 
         print (msg.format(
                 np.sqrt(
                         np.mean(

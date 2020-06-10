@@ -73,8 +73,7 @@ class HybridRegression():
         theta1, theta2 = self.getTheta1And2(Xpred[:,0:1], Xpred[:,1:2])
         studentLevelRatio = Xpred[:,2:3]
         courseLevelRatio = Xpred[:,3:4]
-        
-        
+
         
         fRules = FuzzyRules()
         
@@ -98,9 +97,9 @@ class HybridRegression():
                 preCSV.write("ActualOutput,studentLevelRatio,courseLevelRatio,HybridYpred,YpredMatrixFactorization,YpredFuzzyRules,YpredLasso,theta1,theta2,theta3\n")
                 for i in range(len(self.YpredLasso)):
                     preCSV.write("{},{},{},{},{},{},{},{},{},{}\n".format(
-                            studentLevelRatio[i,0],
-                            courseLevelRatio[i,0],
                             Yactual[i,0],
+                            studentLevelRatio[i,0],
+                            courseLevelRatio[i,0],                            
                             HybridYpred[i,0], 
                             self.YpredMatrixFactorization[i], 
                             YpredFuzzyRules[i], 

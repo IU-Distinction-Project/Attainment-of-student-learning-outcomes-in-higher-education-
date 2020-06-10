@@ -4,7 +4,6 @@ Created on 16-4-2020
 @author: Abdullah Alshanqiti (a.m.alshanqiti@gmail.com)
 """
 
-
 ###################################################################
 from HybridRegression import HybridRegression
 from SelfOrganizingMaps import SelfOrganizingMap
@@ -20,26 +19,26 @@ class LearningStudentOutcomes():
         ###################################################################        
         self.dict_config = {}
         self.dict_config['seed'] = 0
-        self.dict_config['max_iter'] = 1000000
+        self.dict_config['max_iter'] = 1000
         self.dict_config['Cross_validation'] = 5
         self.dict_config['theta3']=.25
-        self.dict_config['iSquaredMapDim']= 4
+        self.dict_config['iSquaredMapDim']= 6
         self.dict_config['learning_rate']=.15
         self.dict_config['max_iter_SOM']=100
         self.dict_config['radius'] = 1.4
 
 
         self.dict_config['strPathOfRegPred'] = "../resources/HybridRegressionPred.csv"
-        self.pathMainDataSet = "../resources/dumpMainDataset.csv"
-        self.pathGMDataset = "../resources/dumpGMDataset.csv"
-        self.pathGMUserCourseIDs = "../resources/dumpGMUserCourseIDs.csv"
+        self.pathMainDataSet = "../resources/MainDataset.csv"
+        self.pathGMDataset = "../resources/GMDataset.csv"
+        self.pathGMUserCourseIDs = "../resources/GMStudentCourseIDs.csv"
         self.pathExport_output = "../resources/export_output.csv"
 
 
         # dataset configuration
         self.dataSet=None
-        self.iDSTestingPosition = 20
-        self.iGradeColumnNumber = 18        
+        self.iDSTestingPosition = 165959
+        self.iGradeColumnNumber = 28        
         return
 
 
@@ -55,7 +54,7 @@ class LearningStudentOutcomes():
                 self.dataSet = pd.read_csv(self.pathMainDataSet, header=None)
             
             '''
-            The main dataset in the file "MainDataset.csv" must contain in the following columns (in CSV format):
+            The main dataset in the file "MainDataset.csv" must contain the following columns (in CSV format):
                 
             0 StudentID	
             1 CourseID
@@ -78,9 +77,17 @@ class LearningStudentOutcomes():
             17   X[15] TG_All
             18   X[16] AG_All
             19   X[17] LG_All
+            20   X[18] AA_L_Last
+            21   X[19] AA_L_All
+            22   X[20] AA_Last
+            23   X[21] AA_All
+            24   X[22] BA_L_Last
+            25   X[23] BA_L_All
+            26   X[24] BA_Last
+            27   X[25] BA_All
             ..   X[..] other student features
             ..   X[..] other Course features
-            ..   X[..] Grade
+            28   X[..] Grade
             ============================================
             ..   Y[..] Factors 
             ============================================
@@ -90,23 +97,23 @@ class LearningStudentOutcomes():
 
                 # This is for Hybrid regression model   
                 if is_it_for_training:
-                    X = pd.DataFrame(self.dataSet, columns= range(2,18)).values[0:self.iDSTestingPosition]
-                    Y = pd.DataFrame(self.dataSet, columns= [18]).values[0:self.iDSTestingPosition]
+                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber)).values[0:self.iDSTestingPosition]
+                    Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[0:self.iDSTestingPosition]
                     return X, Y
                 else:
-                    X = pd.DataFrame(self.dataSet, columns= [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]).values[self.iDSTestingPosition:]
-                    Y = pd.DataFrame(self.dataSet, columns= [18]).values[self.iDSTestingPosition:]
+                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber)).values[self.iDSTestingPosition:]
+                    Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[self.iDSTestingPosition:]
                     return X, Y
             
             # This is for Multi-label classification
             else:
                 if is_it_for_training:
-                    X = pd.DataFrame(self.dataSet, columns= [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]).values[0:self.iDSTestingPosition]
-                    Y = pd.DataFrame(self.dataSet, columns= [19,20,21,22,23,24,25,26,27,28]).values[0:self.iDSTestingPosition]
+                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber+1)).values[0:self.iDSTestingPosition]
+                    Y = pd.DataFrame(self.dataSet, columns= range(self.iGradeColumnNumber+1, len(self.dataSet.columns))).values[0:self.iDSTestingPosition]
                     return X, Y                 
                 else:
-                    X = pd.DataFrame(self.dataSet, columns= [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]).values[self.iDSTestingPosition:]
-                    Y = pd.DataFrame(self.dataSet, columns= [19,20,21,22,23,24,25,26,27,28]).values[self.iDSTestingPosition:]
+                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber+1)).values[self.iDSTestingPosition:]
+                    Y = pd.DataFrame(self.dataSet, columns= range(self.iGradeColumnNumber+1, len(self.dataSet.columns))).values[self.iDSTestingPosition:]
                     return X, Y 
 
 
@@ -144,7 +151,7 @@ class LearningStudentOutcomes():
         # Loading the training dataset, and train both Lasso regression model and Fuzzy rules ..
         X, Y = self.loadDataset()
         if len(SCIDs) != (len(self.dataSet)-len(Y)):
-            raise ValueError("The number of instances used to make predictions must be equal to the size of the mapping list between students and courses in the files ({})".format(self.pathGMUserCourseIDs))        
+            raise ValueError("The number of instances used to make predictions must be equal to the size of the mapping list between students and courses in the files ({}): len(SCIDs)={}, len(self.dataSet)={}, len(Y)={} ".format(self.pathGMUserCourseIDs, len(SCIDs), len(self.dataSet), len(Y)))        
         SCIDs=None
         hReg.trainLassoModel(X, Y)
 
@@ -175,18 +182,16 @@ class LearningStudentOutcomes():
         
         
         # Loading the testing dataset, and collecting the predictions as prototype vectors 
-        X,Y = self.loadDataset(False, False)
+        X,Y = self.loadDataset(False, False)        
         YfactorsPred = SOM.getPredictions(X, Y, True)
         X=None
         Y=None
-        
-        
+                
         # updating the data-frame by the predicted factors 
         for i in range(self.iDSTestingPosition, len(self.dataSet)):    
-            for j in range (self.iGradeColumnNumber+1, len(self.dataSet[0])-1):        
-                self.dataSet.iat[i, j]= YfactorsPred[i-self.iDSTestingPosition, j-self.iGradeColumnNumber-1]
-
-        
+            for j in range (self.iGradeColumnNumber+1, len(self.dataSet.columns)):        
+                self.dataSet.iat[i, j]= YfactorsPred[i-self.iDSTestingPosition, j-self.iGradeColumnNumber-1]                
+       
         
     
     # save all predications from the data-frame to CSV
@@ -201,17 +206,22 @@ class LearningStudentOutcomes():
     def printDataFrame(self):
         if self.dataSet is None: self.loadDataset()
         print (self.dataSet)
-
+        
+    def printDataSet(self):
+        X, Y = self.loadDataset(False, False)
+        print (X)
+        print (Y)
+        
 
 def main():
 
     lso = LearningStudentOutcomes()
-    lso.performHybridRegression()
+    #lso.performHybridRegression()
     lso.performMultiLabelClassification()
-    lso.saveToCSV()    
+    #lso.saveToCSV()
     print ("Process completed.")
     
     
 if __name__ == "__main__":
-    main()    
+    main()
 

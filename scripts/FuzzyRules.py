@@ -63,18 +63,26 @@ class FuzzyRules():
         
         '''
          There are 12 types of grades combined with the range of courses as following indexes:
-            TG_L_Last	[5]
-            AG_L_Last	[6]
-            LG_L_Last	[7]
-            TG_L_All	[8]
-            AG_L_All	[9]
-            LG_L_All	[10]
-            TG_Last		[11]
-            AG_Last		[12]
-            LG_Last		[13]
-            TG_All		[14]
-            AG_All		[15]
-            LG_All		[16]
+            8    X[6]  TG_L_Last
+            9    X[7]  AG_L_Last
+            10   X[8]  LG_L_Last
+            11   X[9]  TG_L_All
+            12   X[10] AG_L_All
+            13   X[11] LG_L_All
+            14   X[12] TG_Last
+            15   X[13] AG_Last
+            16   X[14] LG_Last
+            17   X[15] TG_All
+            18   X[16] AG_All
+            19   X[17] LG_All
+            20   X[18] AA_L_Last
+            21   X[19] AA_L_All
+            22   X[20] AA_Last
+            23   X[21] AA_All
+            24   X[22] BA_L_Last
+            25   X[23] BA_L_All
+            26   X[24] BA_Last
+            27   X[25] BA_All
         '''
         # These are 96 rules (4 * 6 * 4)
         if s_GPA is self.GPA.Excellent: return self.withExcellent(GPAChangeRate, range_courses)
@@ -88,35 +96,35 @@ class FuzzyRules():
     ############################################################
     def withExcellent(self, GPAChangeRate, range_courses):
         # Excellent and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # Excellent and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 20        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # Excellent and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18       
         # Excellent and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # Excellent and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 24        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 22        
         # Excellent and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22        
         return None
     
     
@@ -124,35 +132,35 @@ class FuzzyRules():
     ############################################################
     def withVeryGood(self, GPAChangeRate, range_courses):
          # VeryGood and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # VeryGood and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 20       
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # VeryGood and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 19
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
         # VeryGood and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # VeryGood and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # VeryGood and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 5              
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22              
         return None
     
     
@@ -160,35 +168,35 @@ class FuzzyRules():
     ############################################################
     def withGood(self, GPAChangeRate, range_courses):
         # Good and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 7        
         # Good and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 18        
         # Good and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
         # Good and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # Good and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # Good and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 5                
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22                
         return None 
     
     
@@ -196,36 +204,36 @@ class FuzzyRules():
     ############################################################
     def withPass(self, GPAChangeRate, range_courses):
         # Pass and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 15
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
+        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # Pass and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 12        
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
         # Pass and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
+        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
         # Pass and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 17
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
+        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
         # Pass and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 5        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 17
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 11
+        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 22        
         # Pass and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 5        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 5
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 5        
-        return None        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 25
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 23
+        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22        
+        return None
         
         
     
