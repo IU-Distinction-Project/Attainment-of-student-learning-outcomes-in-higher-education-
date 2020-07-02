@@ -7,7 +7,9 @@ on 16-4-2020
 
 """
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
  
 class SOM(object):
@@ -19,7 +21,7 @@ class SOM(object):
         self.iSquaredMapDim = iSquaredMapDim
         iNeurons = self.iSquaredMapDim * self.iSquaredMapDim
         self.maxIter = maxIter
-        self.dRadius = 2.1
+        self.dRadius = self.iSquaredMapDim * .6
         self.tfGraph = tf.Graph()
         
 
@@ -32,7 +34,7 @@ class SOM(object):
             tf.set_random_seed(0)
             self.NeuronWeights = tf.Variable(tf.random_normal([iNeurons, iInputLength]))
             self.NeuronLocation = self.generateIndexMatrix()            
-
+                        
             
             
             # Input placeholders
@@ -54,9 +56,8 @@ class SOM(object):
             # Calculate learning rate and radius
             decay_function = tf.subtract(1.0, tf.div(self.iterInputPlaceholder, self.maxIter))
             _current_learning_rate = tf.multiply(learning_rate, decay_function)
-            _current_radius = tf.multiply(self.dRadius, decay_function)
- 
-    
+            _current_radius = tf.multiply(self.dRadius, decay_function)  
+                        
     
             # Adapt learning rate to each neuron based on position
             bmu_matrix = tf.stack([bmu_location for i in range(iNeurons)])
@@ -104,11 +105,16 @@ class SOM(object):
     ############################################################            
     def train(self, inputVectors):
         for iIter in range(self.maxIter):
-            for input_vect in inputVectors:
+            print(".", end='')
+            if iIter % 100 ==0 and iIter>1:
+                print(". ", iIter)
+            
+            for input_vect in inputVectors:                                
                 self._sess.run(self._training,
                                feed_dict={self.inputPlaceholder: input_vect,
-                                          self.iterInputPlaceholder: iIter})     
-        
+                                          self.iterInputPlaceholder: iIter})
+                
+        print(".")
         self.NeuronWeights = list(self._sess.run(self.NeuronWeights))                
         self.NeuronLocation = list(self._sess.run(self.NeuronLocation))
         return self.NeuronWeights, self.NeuronLocation

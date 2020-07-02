@@ -5,293 +5,209 @@ Created on 16-4-2020
 """
 
 ############################################################
+from Student import Student
 from enum import Enum
 import numpy as np
 
 
 
-class FuzzyRules():
+class FuzzyModel():
 
         
     
     ############################################################    
-    def __init__(self): return        
-    def getFuzzyRulesPredictions(self, Xpred):
+    def __init__(self, DGapRatioForAT_AL=1.5):         
         
-        YpredFuzzyRules = np.zeros(len(Xpred))
+        self.dGapRatioForAT_AL = DGapRatioForAT_AL
+        self.studentsList = {}
+        self.cube = self.loadCubeRules()
+        
+
+    
+    
+    ############################################################
+    def train(self, 
+              StudentID,
+              StudentLevel,
+              CourseID, 
+              CourseLevel, 
+              CourseCategory, 
+              ActualGrade):
+        
+        # get student details from the list 
+        student = self.studentsList.get(StudentID)
+        
+        if student is None:
+            student = Student(StudentID, StudentLevel)
+            self.studentsList[StudentID]= student
+        
+        # then adding a course for training and return the number of added courses already ...        
+        student.addCourseAndMark(
+                CourseID, 
+                CourseLevel,
+                CourseCategory,
+                ActualGrade)
+    
+    
+    
+    ############################################################
+    def getFuzzyPredictions(self, Xpred):
+   
+        YpredFuzzy = np.zeros(len(Xpred))
         
         for i in range (len(Xpred)):
-            
-            S_levelRatio = Xpred[i, 2]
-            
-            s_GPA = self.getGPAEnum(Xpred[i, 3])            
-            GPAChangeRate = self.getGPAChangeRateEnum(Xpred[i, 4])
-            
-            range_courses = self.getRangeOfcourses(S_levelRatio, s_GPA)            
-            indexTypeofGradeAndRangeOfCourses = self.getTypesofGradeFromCube(s_GPA, GPAChangeRate, range_courses)
-            
-            YpredFuzzyRules[i] = Xpred[i, indexTypeofGradeAndRangeOfCourses]
-            
-        return YpredFuzzyRules
-    
-    
-    
-    
-    ############################################################
-    def getRangeOfcourses(self, S_levelRatio, s_GPA):        
-        '''
-        There are four types of ranges:
-            ▪ L-Last: All courses (with the same level) studied in the last semester only
-            ▪ L-All: All courses (with the same level) previously studied.
-            ▪ Last: All courses studied in the last semester only
-            ▪ All: All courses previously studied.
-        '''        
-        if S_levelRatio>.8:
-            return self.RangeOfCourses.L_Last
-        elif S_levelRatio>.6:
-            return self.RangeOfCourses.L_All
-        elif S_levelRatio>.4:
-            return self.RangeOfCourses.Last
-        else:
-            return self.RangeOfCourses.All
-    
-    
 
+            StudentNextLevel = Xpred[i,2]
+            
+            ###### No prediction for the entry students
+            if StudentNextLevel<=1:                
+                YpredFuzzy[i] = .0
+                continue
+            
+            
+            # get student object
+            StudentID = Xpred[i,0]
+            student = self.studentsList.get(StudentID)
+            
+            if student is None:
+                raise ValueError("No training instances for this student! ({})".format(StudentID))        
+            
+            
+            CourseID = Xpred[i,1]
+            CourseLevel = Xpred[i,3]
+            CourseCategory = Xpred[i,4]
+            
+            
+            # Details from the (Student Object)     
+            selectedCourses = self.getTypeOfSelectedCourses(student)
+            
+            
+            # Grade type from the cube
+            GradeType= self.getGradeType(
+                    student, 
+                    selectedCourses)
+            
+            
+            # Assigning predicted grade value..
+            YpredFuzzy[i] = student.predict(
+                            CourseID, 
+                            CourseLevel,                             
+                            CourseCategory, 
+                            selectedCourses,
+                            GradeType, 
+                            self.dGapRatioForAT_AL)
+            
+        return YpredFuzzy
     
-    ############################################################
-    def getTypesofGradeFromCube(self, s_GPA, GPAChangeRate, range_courses):
-        
-        '''
-         There are 12 types of grades combined with the range of courses as following indexes:
-            8    X[6]  TG_L_Last
-            9    X[7]  AG_L_Last
-            10   X[8]  LG_L_Last
-            11   X[9]  TG_L_All
-            12   X[10] AG_L_All
-            13   X[11] LG_L_All
-            14   X[12] TG_Last
-            15   X[13] AG_Last
-            16   X[14] LG_Last
-            17   X[15] TG_All
-            18   X[16] AG_All
-            19   X[17] LG_All
-            20   X[18] AA_L_Last
-            21   X[19] AA_L_All
-            22   X[20] AA_Last
-            23   X[21] AA_All
-            24   X[22] BA_L_Last
-            25   X[23] BA_L_All
-            26   X[24] BA_Last
-            27   X[25] BA_All
-        '''
-        # These are 96 rules (4 * 6 * 4)
-        if s_GPA is self.GPA.Excellent: return self.withExcellent(GPAChangeRate, range_courses)
-        if s_GPA is self.GPA.VeryGood: return self.withVeryGood(GPAChangeRate, range_courses)
-        if s_GPA is self.GPA.Good: return self.withGood(GPAChangeRate, range_courses)
-        if s_GPA is self.GPA.Pass: return self.withPass(GPAChangeRate, range_courses)
-        return None        
-        
-
-
-    ############################################################
-    def withExcellent(self, GPAChangeRate, range_courses):
-        # Excellent and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # Excellent and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 20        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # Excellent and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18       
-        # Excellent and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # Excellent and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 24        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 22        
-        # Excellent and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22        
-        return None
-    
-    
-    
-    ############################################################
-    def withVeryGood(self, GPAChangeRate, range_courses):
-         # VeryGood and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # VeryGood and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 20       
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # VeryGood and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 19
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
-        # VeryGood and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # VeryGood and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # VeryGood and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22              
-        return None
-    
-    
-    
-    ############################################################
-    def withGood(self, GPAChangeRate, range_courses):
-        # Good and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 7        
-        # Good and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 21
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 19
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 18        
-        # Good and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
-        # Good and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # Good and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 23
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # Good and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22                
-        return None 
-    
-    
-    
-    ############################################################
-    def withPass(self, GPAChangeRate, range_courses):
-        # Pass and HI and the four ranges
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.All:return 15
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_All:return 9
-        if GPAChangeRate is self.GPAchanging.HI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # Pass and MI and the four ranges
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.Last:return 12        
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.MI and range_courses is self.RangeOfCourses.L_Last:return 6        
-        # Pass and SI and the four ranges
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.All:return 16
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.Last:return 20        
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_All:return 10
-        if GPAChangeRate is self.GPAchanging.SI and range_courses is self.RangeOfCourses.L_Last:return 18        
-        # Pass and HD and the four ranges
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.All:return 17
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_All:return 11
-        if GPAChangeRate is self.GPAchanging.HD and range_courses is self.RangeOfCourses.L_Last:return 8        
-        # Pass and MD and the four ranges
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.All:return 17
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.Last:return 14        
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_All:return 11
-        if GPAChangeRate is self.GPAchanging.MD and range_courses is self.RangeOfCourses.L_Last:return 22        
-        # Pass and SD and the four ranges
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.All:return 25
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.Last:return 24        
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_All:return 23
-        if GPAChangeRate is self.GPAchanging.SD and range_courses is self.RangeOfCourses.L_Last:return 22        
-        return None
-        
-        
     
     
     ############################################################    
-    def getGPAEnum(self, sGPA):        
-        if sGPA>=.90: return self.GPA.Excellent # 4.5
-        if sGPA>=.75: return self.GPA.VeryGood  #3.75
-        if sGPA>=.55: return self.GPA.Good      #2.75
-        return self.GPA.Pass
+    def getTypeOfSelectedCourses(self, student):
+        
+
+        # default return
+        selectedCourses = self.RangeOfCourses.Last.value
+		'''
+            There are four types of ranges:
+            ▪ C-Last: All courses (within the same category) studied in the last semester only
+            ▪ C-All: All courses (within the same category) previously studied.
+            ▪ Last: All courses studied in the last semester only
+            ▪ All: All courses previously studied.            
+        '''        
+        # this is for C-Last and C-All
+        if student.iCurrentSemester >= 5:
+            
+            if student.getCurrentGPA() > 4.0:
+                selectedCourses = self.RangeOfCourses.C_All.value
+            
+            #Note  performance of [C-Last] is not good at all, so we used the default .. (Last.value)
+        
+         # this is for Last and All            
+        elif student.iCurrentSemester < 3 or student.getCurrentGPA()<3:            
+            selectedCourses = self.RangeOfCourses.All.value
+
+        return selectedCourses
+    
     
     
     
     ############################################################
-    def getGPAChangeRateEnum(self, GPAChangeRate):
-        if GPAChangeRate>=1:    return self.GPAchanging.HI
-        if GPAChangeRate>=.5:   return self.GPAchanging.MI
-        if GPAChangeRate>=0:    return self.GPAchanging.SI
-        if GPAChangeRate>=-.2:  return self.GPAchanging.SD
-        if GPAChangeRate>=-.5:  return self.GPAchanging.MD       
-        return self.GPAchanging.HD
+    def getGradeType(self, 
+                     student, 
+                     selectedCourses):
         
-        
+        # Cube shpe (4,4,6) - dimensions [GPA, selectedCourses, gpaChange]
+        gpa = student.getGPAEnum().value
+        gpaChange = student.getGPAChangeRateEnum().value
+        return student.GradeTypes(
+                self.cube[
+                        gpa, 
+                        selectedCourses, 
+                        gpaChange])
+    
 
     
     ############################################################
-    class GPA(Enum):
-        Excellent = 1
-        VeryGood = 2
-        Good = 3
-        Pass = 4
-    
-    
-    ############################################################
-    class GPAchanging(Enum):
-        '''
-        GPA changing within the last two semesters
-            SD: Small decrease
-            MD: Medium decrease
-            HD: High decrease
-            SI: Small increase
-            MI: Medium increase
-            HI: High increase
-        '''
-        SD = 1
-        MD = 2
-        HD = 3
-        SI = 4
-        MI = 5
-        HI = 6        
+    def loadCubeRules(self):
         
+        g = Student(None, None)        
+        AT = g.GradeTypes.AT.value
+        TG = g.GradeTypes.TG.value
+        AA = g.GradeTypes.AA.value
+        AG = g.GradeTypes.AG.value
+        BA = g.GradeTypes.BA.value
+        LG = g.GradeTypes.LG.value
+        BL = g.GradeTypes.BL.value        
+        cubeRules = []
         
+        # Pass Dim = 0
+        ############################################
+        cubeRules.append([
+                [LG, LG, BL, LG, LG, BA],
+                [LG, BL, BL, LG, BA, AG],
+                [AA, AA, AA, BA, AA, AA], 
+                [BA, AA, AA, AT, AA, AA]])
+
+       
+        # Good Dim = 1
+        ############################################
+        cubeRules.append([
+                [BA, LG, LG, AG, AG, AA], 
+                [AG, LG, BL, AG, AA, TG], 
+                [AA, AA, LG, AG, LG, AA], 
+                [AA, AA, AG, AA, AA, AG]])
+
+       
+        # Very Good Dim = 2
+        ############################################
+        cubeRules.append([
+                [TG, AG, BA, AA, TG, TG], 
+                [AG, BA, LG, TG, TG, AT], 
+                [AA, AT, BA, AG, AG, TG], 
+                [AG, AT, AG, AG, BA, AG]])
+
+				
+        # Excellent Dim = 3
+        ############################################
+        cubeRules.append([
+                [TG, AG, BA, TG, TG, TG], 
+                [AA, AG, LG, TG, TG, AT], 
+                [AT, AA, AT, AT, AA, AT], 
+                [AT, AA, AT, AT, AA, AT]])        
+
+
+        return np.array(cubeRules)
+
+
+
+
     ############################################################
     class RangeOfCourses(Enum):
-        L_Last = 1
-        L_All = 2
-        Last = 3
-        All = 4
+        C_Last = 0
+        C_All = 1
+        Last = 2
+        All = 3
+        
     
 
 

@@ -8,7 +8,6 @@ Created on 16-4-2020
 from HybridRegression import HybridRegression
 from SelfOrganizingMaps import SelfOrganizingMap
 import pandas as pd
-import numpy as np
 
 
 class LearningStudentOutcomes():
@@ -18,14 +17,15 @@ class LearningStudentOutcomes():
         # configuration and setting up
         ###################################################################        
         self.dict_config = {}
-        self.dict_config['seed'] = 0
-        self.dict_config['max_iter'] = 1000
+        self.dict_config['seed'] = 0	# 5,7,88,45,69,59,43,67,27
+        self.dict_config['max_iter'] = 1000000
         self.dict_config['Cross_validation'] = 5
-        self.dict_config['theta3']=.25
+        self.dict_config['theta3']=.35
         self.dict_config['iSquaredMapDim']= 6
-        self.dict_config['learning_rate']=.15
-        self.dict_config['max_iter_SOM']=100
-        self.dict_config['radius'] = 1.4
+        self.dict_config['learning_rate']=.1
+        self.dict_config['max_iter_SOM']= 100000
+        self.dict_config['radius'] = 4.5
+        self.dict_config['DGapRatioForAT_AL']=1.5
 
 
         self.dict_config['strPathOfRegPred'] = "../resources/HybridRegressionPred.csv"
@@ -37,8 +37,8 @@ class LearningStudentOutcomes():
 
         # dataset configuration
         self.dataSet=None
-        self.iDSTestingPosition = 165959
-        self.iGradeColumnNumber = 28        
+        self.iDSTestingPosition = 165360
+        self.iGradeColumnNumber = 16        
         return
 
 
@@ -56,40 +56,30 @@ class LearningStudentOutcomes():
             '''
             The main dataset in the file "MainDataset.csv" must contain the following columns (in CSV format):
                 
-            0 StudentID	
-            1 CourseID
+            0  StudentID	
+            1  CourseID
+            2  Student Level
+            3  Course Level	
+            4  Course Category	
             ============================================
-            2    X[0]  CourseTeachingRate	
-            3    X[1]  S_completedCourses	
-            4    X[2]  S_levelRatio	
-            5    X[3]  courseLevelRatio
-            6    X[4]  GPA
-            7    X[5]  GPAChangeRate
-            8    X[6]  TG_L_Last
-            9    X[7]  AG_L_Last
-            10   X[8]  LG_L_Last
-            11   X[9]  TG_L_All
-            12   X[10] AG_L_All
-            13   X[11] LG_L_All
-            14   X[12] TG_Last
-            15   X[13] AG_Last
-            16   X[14] LG_Last
-            17   X[15] TG_All
-            18   X[16] AG_All
-            19   X[17] LG_All
-            20   X[18] AA_L_Last
-            21   X[19] AA_L_All
-            22   X[20] AA_Last
-            23   X[21] AA_All
-            24   X[22] BA_L_Last
-            25   X[23] BA_L_All
-            26   X[24] BA_Last
-            27   X[25] BA_All
-            ..   X[..] other student features
-            ..   X[..] other Course features
-            28   X[..] Grade
+            5  Course Category Ratio	
+            6  Course Teaching Rate	
+            7  course Level Ratio	
+            8  CourseTG	
+            9  CourseAA	
+            10 CourseAG	
+            11 CourseBA	
+            12 CourseLG	
             ============================================
-            ..   Y[..] Factors 
+            13 Student Completed Courses 
+            14 Student Level Ratio
+            15 Student average mark
+            16 Grade
+            ============================================
+            other student features
+            other Course features    
+            ============================================
+            Y[..] Factors 
             ============================================
             '''
                 
@@ -97,28 +87,44 @@ class LearningStudentOutcomes():
 
                 # This is for Hybrid regression model   
                 if is_it_for_training:
-                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber)).values[0:self.iDSTestingPosition]
+                    X = pd.DataFrame(self.dataSet, columns= range(5, self.iGradeColumnNumber-1)).values[0:self.iDSTestingPosition]
                     Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[0:self.iDSTestingPosition]
                     return X, Y
                 else:
-                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber)).values[self.iDSTestingPosition:]
+                    X = pd.DataFrame(self.dataSet, columns= range(5, self.iGradeColumnNumber-1)).values[self.iDSTestingPosition:]
                     Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[self.iDSTestingPosition:]
                     return X, Y
             
             # This is for Multi-label classification
             else:
                 if is_it_for_training:
-                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber+1)).values[0:self.iDSTestingPosition]
+                    #self.iGradeColumnNumber+1
+                    X = pd.DataFrame(self.dataSet, columns= range(5, len(self.dataSet.columns))).values[0:self.iDSTestingPosition]
                     Y = pd.DataFrame(self.dataSet, columns= range(self.iGradeColumnNumber+1, len(self.dataSet.columns))).values[0:self.iDSTestingPosition]
                     return X, Y                 
                 else:
-                    X = pd.DataFrame(self.dataSet, columns= range(2, self.iGradeColumnNumber+1)).values[self.iDSTestingPosition:]
+                    X = pd.DataFrame(self.dataSet, columns= range(5, len(self.dataSet.columns))).values[self.iDSTestingPosition:]
                     Y = pd.DataFrame(self.dataSet, columns= range(self.iGradeColumnNumber+1, len(self.dataSet.columns))).values[self.iDSTestingPosition:]
+                    #set Zero to pred. values
+                    for i in range(len(X)):
+                        for j in range (self.iGradeColumnNumber+1-5, len(self.dataSet.columns)-5): 
+                            X[i,j]=0.0
+                            
                     return X, Y 
 
-
-    def getColumnIndexes(self, iFrom, iTo):        
-        return int(",".join(str(iCol) for iCol in np.concatenate([range(iFrom, iTo)])))
+    
+    # Dataset for fuzzy model
+    ###################################################################
+    def loadDatasetForFuzzyModel(self, is_it_for_training=True):
+        
+        if is_it_for_training:
+            X = pd.DataFrame(self.dataSet, columns= range(0, 5)).values[0:self.iDSTestingPosition]
+            Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[0:self.iDSTestingPosition]
+        else:
+            X = pd.DataFrame(self.dataSet, columns= range(0, 5)).values[self.iDSTestingPosition:]          
+            Y = pd.DataFrame(self.dataSet, columns= [self.iGradeColumnNumber]).values[self.iDSTestingPosition:]
+        return X, Y
+            
 
 
     # The big GM matrix that needs to be factorised
@@ -157,6 +163,14 @@ class LearningStudentOutcomes():
 
 
 
+        # training the fuzzy model
+        X,_ = self.loadDatasetForFuzzyModel()
+        hReg.trainFuzzyModel(X)
+        X, Y = self.loadDatasetForFuzzyModel(False)
+        hReg.predictFuzzyModel(X, Y)
+
+
+
         # Loading the testing dataset, and getting the predictions from the three predictors, including the fuzzy rules
         X,Y = self.loadDataset(True, False)
         YgradePred = hReg.getPredictions(X, Y, True)
@@ -183,7 +197,7 @@ class LearningStudentOutcomes():
         
         # Loading the testing dataset, and collecting the predictions as prototype vectors 
         X,Y = self.loadDataset(False, False)        
-        YfactorsPred = SOM.getPredictions(X, Y, True)
+        YfactorsPred,_ = SOM.getPredictions(X, Y, True)
         X=None
         Y=None
                 
@@ -213,12 +227,19 @@ class LearningStudentOutcomes():
         print (Y)
         
 
+        
+        
+        
+        
+        
+        
+
 def main():
 
-    lso = LearningStudentOutcomes()
-    #lso.performHybridRegression()
+    lso = LearningStudentOutcomes()     
+    lso.performHybridRegression()
     lso.performMultiLabelClassification()
-    #lso.saveToCSV()
+    lso.saveToCSV()
     print ("Process completed.")
     
     

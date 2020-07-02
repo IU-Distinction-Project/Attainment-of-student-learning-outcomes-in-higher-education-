@@ -6,6 +6,7 @@ Created on 16-4-2020
 from TensorFlowSOM import SOM
 import scipy.spatial as spatial
 import numpy as np
+import math
 ############
 
 
@@ -29,17 +30,33 @@ class SelfOrganizingMap():
 
         # Initialise an SOM object, and train the neural netwrok ..
         self.som = SOM(self.dConfig['iSquaredMapDim'], len(Xactual[0]), self.dConfig['learning_rate'], self.dConfig['max_iter_SOM'])
-        print (" - start trining SOM model...")
+        print (" - start training SOM model...")
         self.som.train(Xactual)
         print (" - training SOM completed.")
         
         
         
+        
+        
+        
         # Mapping all the winner neurons to the input instances
         # We overwrite the 1st column to hold the mapping index
+        # Defining map Distribution 
+        #mapDistribution = np.zeros((self.dConfig['iSquaredMapDim'], self.dConfig['iSquaredMapDim']))
         for iIndex in range(len(Xactual)):
-            Xactual[iIndex, 0] = self.getIndexOfWinnerNeuron(Xactual[iIndex])     
+            NeuronDim = self.getIndexOfWinnerNeuron(Xactual[iIndex])
+            Xactual[iIndex, 0] = NeuronDim
+        #    mapDistribution[
+        #            self.som.NeuronLocation[NeuronDim][0], 
+        #            self.som.NeuronLocation[NeuronDim][1]]+=1
+            
         print (" - mapping BMU to training data completed.")
+        #print (" - map distribution ...")
+        #for i in range(len(mapDistribution)):            
+        #    for j in range(len(mapDistribution[0])):
+        #        print ("{}\t".format(mapDistribution[i,j]), end="")
+        #    print("")
+        
         
         
         
@@ -96,20 +113,32 @@ class SelfOrganizingMap():
     ############################################################
     def collectYpartFromTrainingInstances(self, Xactual, Yactual, mappedNeurons, distanceRates):
 
-        # normalising distance rates
-        distanceRates = np.array(distanceRates)        
-        distanceRates = distanceRates / distanceRates.sum()
-        
         setFactors = []
+        duplicatedDistanceRates =[]
+        
         for iIndex in range(len(Xactual)):
             distanceIndex = self.indexOfList(Xactual[iIndex, 0], mappedNeurons)
-            if distanceIndex>=0:                
-                setFactors.append(distanceRates[distanceIndex] * Yactual[iIndex])
+            if distanceIndex>=0:
+                duplicatedDistanceRates.append(distanceRates[distanceIndex])
+                setFactors.append(Yactual[iIndex])
         
-        # calculate weighted avrages 
-        setFactors = np.array(setFactors)
-        setFactors = np.sum(setFactors, axis=0)               
-        return setFactors
+              
+        # normalising (duplicated) distance rates          
+        duplicatedDistanceRates = np.array(duplicatedDistanceRates)   
+        if duplicatedDistanceRates.sum() > 0:
+            duplicatedDistanceRates = duplicatedDistanceRates / duplicatedDistanceRates.sum()
+        else:
+            duplicatedDistanceRates = duplicatedDistanceRates + 1.0
+            duplicatedDistanceRates = duplicatedDistanceRates / duplicatedDistanceRates.sum()
+
+            
+       
+        
+        # calculate weighted averages 
+        for iIndex in range(len(duplicatedDistanceRates)):
+            setFactors[iIndex] = setFactors[iIndex] * duplicatedDistanceRates[iIndex]
+
+        return np.sum(np.array(setFactors), axis=0) 
             
     
     
@@ -181,7 +210,7 @@ class SelfOrganizingMap():
             MappedNeurons.append(iPV)
             
         Yactual = np.array(Yactual)
-        
+                
         
         if printAccuracy:
             
@@ -189,14 +218,14 @@ class SelfOrganizingMap():
             FactorsPred =[]
             for iPV in range(len(MappedNeurons)):
                 FactorsPred.append(self.prototypeVectorsSOM_MLL_17[MappedNeurons[iPV]])
-            self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[SOM_MLL_17]: {}")
+            SOM_MLL_17 = self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[SOM_MLL_17]: {}")
             
             
             # ML_SOM_19
             FactorsPred =[]        
             for iPV in range(len(MappedNeurons)):
                 FactorsPred.append(self.prototypeVectorsML_SOM_19[MappedNeurons[iPV]])
-            self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[ML_SOM_19]: {}")
+            ML_SOM_19 = self.doPrintAccuracy(Yactual, np.array(FactorsPred), " - RMSE[ML_SOM_19]: {}")
         
         
          # Our SOM approach
@@ -204,13 +233,13 @@ class SelfOrganizingMap():
         for iPV in range(len(MappedNeurons)):
             FactorsPred.append(self.prototypeVectors[MappedNeurons[iPV]])
         FactorsPred = np.array(FactorsPred)
-        
+                
         
         if printAccuracy:
-            self.doPrintAccuracy(Yactual, FactorsPred, " - RMSE[Our-SOM]: {}")
+            Our_SOM = self.doPrintAccuracy(Yactual, FactorsPred, " - RMSE[Our-SOM]: {}")
             print (" - SOM_Epochs: {}".format(self.dConfig["max_iter_SOM"]))
 
-        return FactorsPred
+        return FactorsPred, "SOM_MLL_17:\t{}\tML_SOM_19:\t{}\tOur_SOM:\t{}".format(SOM_MLL_17, ML_SOM_19, Our_SOM)
         
 
 
@@ -219,17 +248,16 @@ class SelfOrganizingMap():
     def doPrintAccuracy(self, Yactual, FactorsPred, msg):     
         if len(Yactual) != len(FactorsPred):
             raise ValueError("Yactual and FactorsPred are not the same!") 
-        print (msg.format(
-                np.sqrt(
-                        np.mean(
-                                np.power(Yactual - FactorsPred, 2)))))        
-        return
+        
+        rmse = np.sqrt(
+                np.mean(
+                    np.power(Yactual - FactorsPred, 2)))
+        
+        print (msg.format(rmse))
+        return rmse
 
 
 
-
-
-    
     
     
 
